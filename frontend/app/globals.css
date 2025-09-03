@@ -1,0 +1,180 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+}
+
+@layer base {
+  }
+
+@layer components {
+  /* Wallet Cards with Sharp Rectangular Edges */
+  .wallet-card {
+    @apply w-full p-6 bg-white/10 backdrop-blur-sm border border-white/20 hover:border-white/40 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50;
+    border-radius: 0; /* Sharp rectangular edges */
+  }
+
+  .wallet-icon {
+    @apply w-12 h-12 flex items-center justify-center;
+    border-radius: 0; /* Sharp rectangular icon containers too */
+  }
+}
+
+* {
+  @apply border-border;
+}
+
+body {
+  @apply bg-background text-foreground;
+}
+
+/* Soul Beacon specific styles */
+.soul-glow {
+  background: linear-gradient(45deg, #6366f1, #8b5cf6, #fbbf24);
+  background-size: 300% 300%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* Fluid Marble Background - Nocturnal Version */
+.fluid-marble-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background: 
+    radial-gradient(ellipse at 20% 50%, rgba(6, 78, 99, 0.4) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(76, 29, 149, 0.3) 0%, transparent 50%),
+    radial-gradient(ellipse at 40% 40%, rgba(15, 118, 110, 0.35) 0%, transparent 50%),
+    conic-gradient(from 230.29deg at 51.63% 52.16%, rgba(6, 78, 99, 0.4) 0deg, rgba(76, 29, 149, 0.35) 67.5deg, rgba(15, 118, 110, 0.3) 198.75deg, rgba(88, 28, 135, 0.25) 251.25deg, rgba(6, 78, 99, 0.4) 360deg),
+    linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background-size: 120% 120%, 100% 100%, 150% 150%, 200% 200%, 100% 100%;
+  animation: fluidFlow 20s ease-in-out infinite;
+}
+
+.fluid-marble-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 60% 80%, rgba(6, 78, 99, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 30% 10%, rgba(76, 29, 149, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 30%, rgba(15, 118, 110, 0.25) 0%, transparent 60%);
+  background-size: 180% 180%, 140% 140%, 160% 160%;
+  animation: fluidFlow2 25s ease-in-out infinite reverse;
+}
+
+@keyframes fluidFlow {
+  0%, 100% {
+    background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%;
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    background-position: 25% 25%, 15% 10%, 30% 20%, 10% 30%, 0% 0%;
+    transform: rotate(1deg) scale(1.02);
+  }
+  50% {
+    background-position: 50% 50%, 30% 20%, 60% 40%, 20% 60%, 0% 0%;
+    transform: rotate(0deg) scale(1.01);
+  }
+  75% {
+    background-position: 75% 25%, 45% 30%, 30% 60%, 30% 10%, 0% 0%;
+    transform: rotate(-1deg) scale(1.02);
+  }
+}
+
+@keyframes fluidFlow2 {
+  0%, 100% {
+    background-position: 100% 100%, 100% 100%, 100% 100%;
+    transform: rotate(0deg) scale(1);
+  }
+  33% {
+    background-position: 70% 30%, 85% 60%, 40% 80%;
+    transform: rotate(2deg) scale(1.01);
+  }
+  66% {
+    background-position: 30% 70%, 60% 15%, 80% 40%;
+    transform: rotate(-2deg) scale(1.02);
+  }
+}
+
+.beacon-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(251, 191, 36, 0.4),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+.resonance-pulse {
+  animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-soul-400 rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply bg-soul-500;
+}
