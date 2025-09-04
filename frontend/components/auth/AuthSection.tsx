@@ -31,8 +31,9 @@ export default function AuthSection({ onAuthSuccess }: AuthSectionProps) {
     try {
       // First, try to verify the API key with the backend
       const userId = `user-${Date.now()}`
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       
-      const response = await fetch('http://localhost:8000/api/ai/set-key', {
+      const response = await fetch(`${apiUrl}/api/ai/set-key`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

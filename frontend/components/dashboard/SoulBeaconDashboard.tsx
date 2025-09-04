@@ -253,7 +253,8 @@ export default function SoulBeaconDashboard({ isTestNetMode, user }: SoulBeaconD
           const effectiveUserAddress = walletAddress || 'CONSISTENT_DEMO_USER'
           console.log('Using effective address:', effectiveUserAddress)
           
-          const matchResponse = await fetch('http://localhost:8000/api/matching/find', {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+          const matchResponse = await fetch(`${apiUrl}/api/matching/find`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
