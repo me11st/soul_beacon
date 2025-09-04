@@ -9,7 +9,8 @@
     "smart-contracts"
   ],
   "scripts": {
-    "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
+    "start": "npm run start:backend",
+    "start:both": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
     "start:frontend": "cd frontend && npm start",
     "start:backend": "cd backend && npm start",
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
@@ -30,8 +31,10 @@
     "install:backend": "cd backend && npm install",
     "install:contracts": "cd smart-contracts && npm install"
   },
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  },
   "devDependencies": {
-    "concurrently": "^8.2.2",
     "typescript": "^5.2.2"
   },
   "engines": {
