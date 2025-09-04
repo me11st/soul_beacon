@@ -48,6 +48,25 @@ app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 
 // Health check (before rate limiting)
+app.get('/', (req, res) => {
+  res.status(200).json({
+    name: 'Soul Beacon API',
+    version: '1.0.0',
+    description: 'AI-driven resonance matching platform with Algorand ASA tokens',
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth',
+      users: '/api/users',
+      beacons: '/api/beacons',
+      matching: '/api/matching',
+      ai: '/api/ai'
+    },
+    frontend: process.env.FRONTEND_URL || 'http://localhost:3000'
+  })
+})
+
 app.get('/health', (req, res) => {
   res.status(200).json({ 
     status: 'OK', 
