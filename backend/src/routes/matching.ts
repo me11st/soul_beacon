@@ -1,55 +1,164 @@
 import { Router } from 'express'
+import { aiMatchingService, UserSoulProfile, BeaconData } from '../services/ai-matching'
 
 const router = Router()
 
-// POST /api/matching/find - Find potential matches for a beacon
+// Temporary in-memory storage for user profiles and beacons
+// TODO: Replace with actual database
+const userProfiles = new Map<string, UserSoulProfile>()
+const beaconHistory = new Map<string, BeaconData[]>()
+
+// POST /api/matching/find - Find potential matches for a beacon using AI
 router.post('/find', async (req, res) => {
   try {
-    const { beaconId, userPreferences } = req.body
+    const { 
+      beaconId, 
+      beaconContent, 
+      beaconCategory, 
+      userAddress,
+      userPreferences 
+    } = req.body
     
-    // TODO: Implement AI-powered matching algorithm
-    // TODO: Calculate resonance scores using OpenAI API
+    console.log(`🔍 Finding matches for user ${userAddress}, beacon: "${beaconContent}"`)
     
-    const mockMatches = [
-      {
-        id: 'match-1',
-        beaconId: 'beacon-target',
-        title: 'Creative Photography Project',
-        description: 'Looking for artistic collaboration',
-        resonanceScore: 94,
-        userAddress: '0x789...',
-        userName: 'Alex Creative',
-        matchReasons: [
-          'Similar creative interests',
-          'Compatible scheduling preferences',
-          'Complementary skill sets'
-        ]
-      },
-      {
-        id: 'match-2',
-        beaconId: 'beacon-target-2',
-        title: 'Nature Adventure Seeking',
-        description: 'Mountain hiking and photography',
-        resonanceScore: 87,
-        userAddress: '0xabc...',
-        userName: 'Sam Explorer',
-        matchReasons: [
-          'Shared love for outdoor activities',
-          'Similar photography interests',
-          'Compatible energy levels'
-        ]
-      }
-    ]
+    if (!userAddress) {
+      return res.status(400).json({ error: 'User address is required' })
+    }
     
-    res.json({
-      matches: mockMatches,
-      total: mockMatches.length,
-      algorithm: 'soul-resonance-v1'
-    })
+    // Create beacon data
+    const beacon: BeaconData = {
+      id: beaconId,
+      content: beaconContent,
+      category: beaconCategory,
+      creatorAddress: userAddress,
+      timestamp: new Date()
+    }
+    
+    // Store beacon in user's history
+    if (!beaconHistory.has(userAddress)) {
+      beaconHistory.set(userAddress, [])
+    }
+    beaconHistory.get(userAddress)!.push(beacon)
+    
+    // Get or create user profile
+    let userProfile = userProfiles.get(userAddress)
+    if (!userProfile) {
+      const userBeacons = beaconHistory.get(userAddress) || []
+      userProfile = aiMatchingService.createUserProfile(userAddress, userBeacons)
+      userProfiles.set(userAddress, userProfile)
+      console.log(`✨ Created new soul profile for ${userAddress}:`, userProfile)
+    }
+    
+    // Get all other user profiles for matching
+    const allProfiles = Array.from(userProfiles.values())
+    console.log(`🧠 Analyzing ${allProfiles.length} total profiles for matches`)
+    
+    // Use AI to find matches (excludes self automatically)
+    const matches = await aiMatchingService.findMatches(
+      userAddress,
+      beacon,
+      userProfile,
+      allProfiles
+    )
+    
+    console.log(`💫 Found ${matches.length} compatible matches with resonance >= 70%`)
+    
+    // If no real users found, create demo matches for testing
+    if (matches.length === 0) {
+      console.log('🎪 No real matches found, creating demo matches for testing...')
+      await createDemoUsers()
+      
+      const demoProfiles = Array.from(userProfiles.values())
+      const demoMatches = await aiMatchingService.findMatches(
+        userAddress,
+        beacon,
+        userProfile,
+        demoProfiles
+      )
+      
+      res.json({
+        matches: demoMatches.map(match => ({
+          id: match.matchId,
+          beaconId: beacon.id,
+          title: `${match.partnerName}'s Resonance`,
+          description: `Soul connection through ${beacon.category}`,
+          resonanceScore: match.resonanceScore,
+          userAddress: match.partnerAddress,
+          userName: match.partnerName,
+          matchReasons: match.matchReasons,
+          roomId: match.roomId
+        })),
+        total: demoMatches.length,
+        algorithm: 'ai-soul-resonance-v1',
+        userProfile: userProfile // Send back the user's analyzed profile
+      })
+    } else {
+      res.json({
+        matches: matches.map(match => ({
+          id: match.matchId,
+          beaconId: beacon.id,
+          title: `${match.partnerName}'s Resonance`,
+          description: `Soul connection through ${beacon.category}`,
+          resonanceScore: match.resonanceScore,
+          userAddress: match.partnerAddress,
+          userName: match.partnerName,
+          matchReasons: match.matchReasons,
+          roomId: match.roomId
+        })),
+        total: matches.length,
+        algorithm: 'ai-soul-resonance-v1',
+        userProfile: userProfile
+      })
+    }
   } catch (error) {
+    console.error('❌ Matching error:', error)
     res.status(500).json({ error: 'Failed to find matches' })
   }
 })
+
+// Helper function to create demo users for testing
+async function createDemoUsers() {
+  const demoUsers = [
+    {
+      address: 'DEMO_CREATIVE_USER_123',
+      beacons: [
+        { content: 'Looking for artistic collaboration on digital art project', category: 'Creative Collaboration' },
+        { content: 'Seeking creative minds for music and visual storytelling', category: 'Creative Collaboration' }
+      ]
+    },
+    {
+      address: 'DEMO_INTELLECTUAL_USER_456', 
+      beacons: [
+        { content: 'Want to discuss philosophy and consciousness with deep thinkers', category: 'Intellectual Discussion' },
+        { content: 'Exploring quantum physics and its implications for reality', category: 'Intellectual Discussion' }
+      ]
+    },
+    {
+      address: 'DEMO_SUPPORTIVE_USER_789',
+      beacons: [
+        { content: 'Here to provide emotional support during difficult times', category: 'Emotional Support' },
+        { content: 'Looking for empathetic souls to share feelings and experiences', category: 'Emotional Support' }
+      ]
+    }
+  ]
+  
+  for (const demo of demoUsers) {
+    if (!userProfiles.has(demo.address)) {
+      const beacons = demo.beacons.map((b, index) => ({
+        id: `demo-beacon-${demo.address}-${index}`,
+        content: b.content,
+        category: b.category,
+        creatorAddress: demo.address,
+        timestamp: new Date()
+      }))
+      
+      beaconHistory.set(demo.address, beacons)
+      const profile = aiMatchingService.createUserProfile(demo.address, beacons)
+      userProfiles.set(demo.address, profile)
+      console.log(`👤 Created demo user profile: ${demo.address}`)
+    }
+  }
+}
 
 // POST /api/matching/connect - Initiate connection between matched users
 router.post('/connect', async (req, res) => {
