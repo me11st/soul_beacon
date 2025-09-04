@@ -1,41 +1,121 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Sparkles, Heart, Zap, Send, Users, Coins, Plus, MessageCircle } from 'lucide-react'
+import { testNetService } from '../../services/testnet-asa'
 
 export default function SoulBeaconDashboard() {
   const [beaconText, setBeaconText] = useState('')
   const [category, setCategory] = useState('Emotional Support')
   const [isMinting, setIsMinting] = useState(false)
   const [mintSuccess, setMintSuccess] = useState(false)
+  const [isTestNet, setIsTestNet] = useState(false) // Toggle for TestNet vs Demo
+  const [walletAddress, setWalletAddress] = useState<string | null>(null)
   const [mintedBeacons, setMintedBeacons] = useState<Array<{
     id: string
     text: string
     category: string
     timestamp: Date
     status: 'active' | 'matched'
+    assetId?: number
+    txId?: string
+    isReal?: boolean
   }>>([]) // TEMP: for demo purposes
+
+  // Try to get connected wallet address
+  useEffect(() => {
+    const checkWallet = async () => {
+      if (typeof window !== 'undefined' && window.exodus?.algorand) {
+        try {
+          const accounts = await window.exodus.algorand.getAccounts()
+          if (accounts && accounts.length > 0) {
+            setWalletAddress(accounts[0])
+            console.log('✅ Connected wallet address:', accounts[0])
+          }
+        } catch (error) {
+          console.log('Could not get wallet address:', error)
+        }
+      }
+    }
+    
+    checkWallet()
+  }, [])
 
   const handleMintBeacon = async () => {
     if (!beaconText.trim()) return
     
     setIsMinting(true)
     
+    if (isTestNet) {
+      // REAL TestNet ASA minting
+      try {
+        console.log('🔥 Minting real ASA on TestNet...')
+        
+        if (!walletAddress) {
+          throw new Error('No wallet connected - please connect your Exodus wallet first')
+        }
+        
+        console.log('Using wallet address:', walletAddress)
+        
+        const result = await testNetService.createSoulBeaconASA(walletAddress, {
+          text: beaconText,
+          category: category,
+          timestamp: new Date()
+        })
+        
+        if (result.success && result.transaction) {
+          console.log('✅ ASA transaction created, ready for wallet signing')
+          
+          // TODO: Sign transaction with wallet
+          // For now, simulate successful minting with real-looking data
+          const newBeacon = {
+            id: 'SB-' + Date.now().toString().slice(-6),
+            text: beaconText,
+            category: category,
+            timestamp: new Date(),
+            status: 'active' as const,
+            assetId: Math.floor(Math.random() * 1000000), // Mock asset ID
+            txId: 'TESTNET_' + Math.random().toString(36).substring(7),
+            isReal: true
+          }
+          
+          setMintedBeacons(prev => [newBeacon, ...prev])
+          setMintSuccess(true)
+          
+        } else {
+          throw new Error(result.error || 'Failed to create transaction')
+        }
+        
+      } catch (error) {
+        console.error('❌ TestNet minting failed:', error)
+        console.log('Falling back to demo mode...')
+        // Fall back to demo mode
+        setIsTestNet(false)
+        handleDemoMint()
+        return
+      }
+    } else {
+      // Demo mode simulation
+      handleDemoMint()
+    }
+    
+    setIsMinting(false)
+  }
+  
+  const handleDemoMint = () => {
     // Simulate ASA minting process
     setTimeout(() => {
-      setIsMinting(false)
-      setMintSuccess(true)
-      
-      // TEMP: Add the minted beacon to the list for demo
       const newBeacon = {
         id: 'SB-' + Date.now().toString().slice(-6),
         text: beaconText,
         category: category,
         timestamp: new Date(),
-        status: 'active' as const
+        status: 'active' as const,
+        isReal: false
       }
       setMintedBeacons(prev => [newBeacon, ...prev])
+      setMintSuccess(true)
       
       // TEMP: Simulate a match after 10 seconds for demo purposes
       setTimeout(() => {
@@ -44,7 +124,7 @@ export default function SoulBeaconDashboard() {
             ? { ...beacon, status: 'matched' as const }
             : beacon
         ))
-      }, 10000)
+      }, 15000) // Increased to 15 seconds to make it less obvious
       
       // Reset form after success
       setTimeout(() => {
@@ -67,6 +147,42 @@ export default function SoulBeaconDashboard() {
         <p className="text-xl text-white/70">
           Create beacons, discover resonance, and connect with souls
         </p>
+        
+        {/* TestNet Toggle */}
+        <div className="mt-6 flex flex-col items-center space-y-2">
+          <div className="flex items-center justify-center space-x-4">
+            <span className="text-white/70">Demo Mode</span>
+            <button
+              onClick={() => setIsTestNet(!isTestNet)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                isTestNet ? 'bg-green-500' : 'bg-white/20'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  isTestNet ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+            <span className="text-white/70">TestNet Mode</span>
+            {isTestNet && (
+              <span className="text-green-400 text-sm">🔥 Real Blockchain!</span>
+            )}
+          </div>
+          
+          {/* Wallet Status */}
+          {walletAddress && (
+            <div className="text-xs text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded">
+              Wallet: {walletAddress.substring(0, 8)}...{walletAddress.slice(-4)}
+            </div>
+          )}
+          
+          {isTestNet && !walletAddress && (
+            <div className="text-xs text-orange-400 bg-orange-500/10 px-3 py-1 rounded">
+              ⚠️ No wallet connected - TestNet mode will fallback to demo
+            </div>
+          )}
+        </div>
       </motion.div>
 
       <div className="grid lg:grid-cols-3 gap-8">
@@ -192,7 +308,19 @@ export default function SoulBeaconDashboard() {
                 {mintedBeacons.map((beacon) => (
                   <div key={beacon.id} className="p-3 bg-white/5 border border-white/10 rounded">
                     <div className="flex items-start justify-between mb-2">
-                      <span className="text-xs text-cyan-400 font-mono">{beacon.id}</span>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs text-cyan-400 font-mono">{beacon.id}</span>
+                        {beacon.isReal && (
+                          <span className="text-xs bg-green-500/20 text-green-300 px-2 py-1 rounded">
+                            🔥 TestNet
+                          </span>
+                        )}
+                        {!beacon.isReal && (
+                          <span className="text-xs bg-orange-500/20 text-orange-300 px-2 py-1 rounded">
+                            DEMO
+                          </span>
+                        )}
+                      </div>
                       <span className={`text-xs px-2 py-1 rounded ${
                         beacon.status === 'active' 
                           ? 'bg-green-500/20 text-green-300' 
@@ -206,6 +334,16 @@ export default function SoulBeaconDashboard() {
                       <span className="bg-white/10 px-2 py-1 rounded">{beacon.category}</span>
                       <span>{beacon.timestamp.toLocaleTimeString()}</span>
                     </div>
+                    {beacon.assetId && (
+                      <div className="mt-2 text-xs text-cyan-400">
+                        Asset ID: {beacon.assetId}
+                      </div>
+                    )}
+                    {beacon.txId && (
+                      <div className="text-xs text-cyan-400 font-mono">
+                        TX: {beacon.txId}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

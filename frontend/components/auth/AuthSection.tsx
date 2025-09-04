@@ -29,8 +29,8 @@ export default function AuthSection({ onAuthSuccess }: AuthSectionProps) {
     setError('')
 
     try {
-      // TODO: In a real implementation, verify the API key with backend
-      // For now, we'll simulate a successful authentication
+      // TEMP: For demo/testing - fall back to simulation
+      console.log('Using demo mode authentication')
       await new Promise(resolve => setTimeout(resolve, 1500))
       
       const userData = {
