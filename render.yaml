@@ -1,0 +1,11 @@
+# Render.com deployment configuration
+
+# Build Command: npm install && npm run build
+# Start Command: npm start
+
+# Environment Variables needed:
+# NODE_ENV=production
+# PORT=8000
+# FRONTEND_URL=https://soulbeacon.zkverse.me
+
+# Auto-deploy from GitHub: main branch
