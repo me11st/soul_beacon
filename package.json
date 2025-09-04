@@ -6,15 +6,13 @@
   "workspaces": [
     "frontend",
     "backend", 
-    "smart-contracts",
-    "shared"
+    "smart-contracts"
   ],
   "scripts": {
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
     "dev:frontend": "cd frontend && npm run dev",
     "dev:backend": "cd backend && npm run dev",
-    "build": "npm run build:shared && npm run build:frontend && npm run build:backend",
-    "build:shared": "cd shared && npm run build",
+    "build": "npm run build:frontend && npm run build:backend",
     "build:frontend": "cd frontend && npm run build",
     "build:backend": "cd backend && npm run build",
     "deploy:contracts": "cd smart-contracts && npm run deploy",
@@ -24,11 +22,10 @@
     "test:contracts": "cd smart-contracts && npm test",
     "setup": "npm install && npm run setup:algokit && npm run install:all",
     "setup:algokit": "algokit --version || (echo 'Installing AlgoKit...' && pip install algokit)",
-    "install:all": "npm run install:frontend && npm run install:backend && npm run install:contracts && npm run install:shared",
+    "install:all": "npm run install:frontend && npm run install:backend && npm run install:contracts",
     "install:frontend": "cd frontend && npm install",
     "install:backend": "cd backend && npm install",
-    "install:contracts": "cd smart-contracts && npm install", 
-    "install:shared": "cd shared && npm install"
+    "install:contracts": "cd smart-contracts && npm install"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
