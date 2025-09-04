@@ -16,14 +16,19 @@ export default function Home() {
   const [currentStep, setCurrentStep] = useState<'auth' | 'wallet' | 'dashboard'>('auth')
 
   useEffect(() => {
+    console.log('Main page useEffect - user:', user, 'isWalletConnected:', isWalletConnected)
     if (user) {
-      setCurrentStep(isWalletConnected ? 'dashboard' : 'wallet')
+      const nextStep = isWalletConnected ? 'dashboard' : 'wallet'
+      console.log('Setting currentStep to:', nextStep)
+      setCurrentStep(nextStep)
     } else {
+      console.log('Setting currentStep to: auth')
       setCurrentStep('auth')
     }
   }, [user, isWalletConnected])
 
   const handleAuthSuccess = (userData: any) => {
+    console.log('Auth success with user data:', userData)
     setUser(userData)
   }
 
@@ -109,7 +114,10 @@ export default function Home() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5 }}
             >
-              <WalletSection onWalletConnected={setIsWalletConnected} />
+              <WalletSection onWalletConnected={(connected) => {
+                console.log('onWalletConnected callback called with:', connected)
+                setIsWalletConnected(connected)
+              }} />
             </motion.div>
           )}
 

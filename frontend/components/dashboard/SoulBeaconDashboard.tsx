@@ -1,9 +1,58 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Sparkles, Plus, MessageCircle } from 'lucide-react'
+import { Sparkles, Heart, Zap, Send, Users, Coins, Plus, MessageCircle } from 'lucide-react'
 
 export default function SoulBeaconDashboard() {
+  const [beaconText, setBeaconText] = useState('')
+  const [category, setCategory] = useState('Emotional Support')
+  const [isMinting, setIsMinting] = useState(false)
+  const [mintSuccess, setMintSuccess] = useState(false)
+  const [mintedBeacons, setMintedBeacons] = useState<Array<{
+    id: string
+    text: string
+    category: string
+    timestamp: Date
+    status: 'active' | 'matched'
+  }>>([]) // TEMP: for demo purposes
+
+  const handleMintBeacon = async () => {
+    if (!beaconText.trim()) return
+    
+    setIsMinting(true)
+    
+    // Simulate ASA minting process
+    setTimeout(() => {
+      setIsMinting(false)
+      setMintSuccess(true)
+      
+      // TEMP: Add the minted beacon to the list for demo
+      const newBeacon = {
+        id: 'SB-' + Date.now().toString().slice(-6),
+        text: beaconText,
+        category: category,
+        timestamp: new Date(),
+        status: 'active' as const
+      }
+      setMintedBeacons(prev => [newBeacon, ...prev])
+      
+      // TEMP: Simulate a match after 10 seconds for demo purposes
+      setTimeout(() => {
+        setMintedBeacons(prev => prev.map(beacon => 
+          beacon.id === newBeacon.id 
+            ? { ...beacon, status: 'matched' as const }
+            : beacon
+        ))
+      }, 10000)
+      
+      // Reset form after success
+      setTimeout(() => {
+        setBeaconText('')
+        setMintSuccess(false)
+      }, 3000)
+    }, 2000)
+  }
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
       <motion.div 
@@ -39,17 +88,27 @@ export default function SoulBeaconDashboard() {
                 What are you seeking?
               </label>
               <textarea
+                value={beaconText}
+                onChange={(e) => setBeaconText(e.target.value)}
                 placeholder="Share what kind of connection or conversation you're looking for..."
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white placeholder-white/50 focus:ring-2 focus:ring-purple-400 focus:border-transparent resize-none"
                 rows={4}
+                maxLength={280}
               />
+              <div className="text-right text-xs text-white/60">
+                {beaconText.length}/280 characters
+              </div>
             </div>
             
             <div>
               <label className="block text-sm font-medium text-white/80 mb-2">
                 Beacon Type
               </label>
-              <select className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white focus:ring-2 focus:ring-purple-400">
+              <select 
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white focus:ring-2 focus:ring-purple-400"
+              >
                 <option>Emotional Support</option>
                 <option>Intellectual Discussion</option>
                 <option>Creative Collaboration</option>
@@ -59,13 +118,49 @@ export default function SoulBeaconDashboard() {
             </div>
 
             <motion.button
-              className="w-full bg-gradient-to-r from-purple-500 to-cyan-500 text-white py-4 font-semibold hover:from-purple-600 hover:to-cyan-600 transition-all duration-300"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              onClick={handleMintBeacon}
+              disabled={!beaconText.trim() || isMinting}
+              className={`w-full py-4 font-semibold transition-all duration-300 ${
+                mintSuccess 
+                  ? 'bg-green-500 text-white' 
+                  : isMinting 
+                    ? 'bg-purple-400 text-white cursor-not-allowed'
+                    : beaconText.trim() 
+                      ? 'bg-gradient-to-r from-purple-500 to-cyan-500 text-white hover:from-purple-600 hover:to-cyan-600'
+                      : 'bg-white/20 text-white/50 cursor-not-allowed'
+              }`}
+              whileHover={beaconText.trim() && !isMinting ? { scale: 1.02 } : {}}
+              whileTap={beaconText.trim() && !isMinting ? { scale: 0.98 } : {}}
             >
-              <Sparkles className="w-5 h-5 inline mr-2" />
-              Mint Soul Beacon
+              {mintSuccess ? (
+                <>
+                  <Sparkles className="w-5 h-5 inline mr-2" />
+                  Soul Beacon Minted! ✨
+                </>
+              ) : isMinting ? (
+                <>
+                  <div className="w-5 h-5 inline mr-2 animate-spin border-2 border-white/30 border-t-white rounded-full"></div>
+                  Minting ASA Token...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-5 h-5 inline mr-2" />
+                  Mint Soul Beacon
+                </>
+              )}
             </motion.button>
+
+            {mintSuccess && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="p-4 bg-green-500/20 border border-green-500/30 text-green-300 text-sm"
+              >
+                🎉 Your Soul Beacon ASA has been minted! Token ID: SB-{Date.now().toString().slice(-6)}
+                <br />
+                💫 Your beacon is now active and searching for resonant souls...
+              </motion.div>
+            )}
           </div>
         </motion.div>
 
@@ -81,12 +176,46 @@ export default function SoulBeaconDashboard() {
             <h3 className="text-lg font-semibold mb-4 flex items-center text-white">
               <Sparkles className="w-5 h-5 mr-2 text-cyan-400" />
               Your Beacons
+              <span className="ml-2 text-xs bg-orange-500/20 text-orange-300 px-2 py-1 rounded">
+                TEMP - DEMO
+              </span>
+              {mintedBeacons.length > 0 && (
+                <span className="ml-2 text-sm bg-cyan-500/20 text-cyan-300 px-2 py-1 rounded">
+                  {mintedBeacons.length} active
+                </span>
+              )}
             </h3>
-            <div className="text-center py-8 text-white/60">
-              <Sparkles className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p>No active beacons yet</p>
-              <p className="text-sm">Create your first beacon to start connecting</p>
-            </div>
+            
+            {/* TEMP: Show minted beacons for demo */}
+            {mintedBeacons.length > 0 ? (
+              <div className="space-y-3 max-h-64 overflow-y-auto">
+                {mintedBeacons.map((beacon) => (
+                  <div key={beacon.id} className="p-3 bg-white/5 border border-white/10 rounded">
+                    <div className="flex items-start justify-between mb-2">
+                      <span className="text-xs text-cyan-400 font-mono">{beacon.id}</span>
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        beacon.status === 'active' 
+                          ? 'bg-green-500/20 text-green-300' 
+                          : 'bg-purple-500/20 text-purple-300'
+                      }`}>
+                        {beacon.status === 'active' ? '🟢 Seeking' : '💫 Matched'}
+                      </span>
+                    </div>
+                    <p className="text-white/90 text-sm mb-2">{beacon.text}</p>
+                    <div className="flex items-center justify-between text-xs text-white/60">
+                      <span className="bg-white/10 px-2 py-1 rounded">{beacon.category}</span>
+                      <span>{beacon.timestamp.toLocaleTimeString()}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-white/60">
+                <Sparkles className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                <p>No active beacons yet</p>
+                <p className="text-sm">Create your first beacon to start connecting</p>
+              </div>
+            )}
           </div>
 
           {/* Recent Matches */}
