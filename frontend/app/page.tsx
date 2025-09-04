@@ -13,6 +13,7 @@ export default function Home() {
   const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isWalletConnected, setIsWalletConnected] = useState(false)
+  const [isTestNetMode, setIsTestNetMode] = useState(false)
   const [currentStep, setCurrentStep] = useState<'auth' | 'wallet' | 'dashboard'>('auth')
 
   useEffect(() => {
@@ -114,9 +115,10 @@ export default function Home() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5 }}
             >
-              <WalletSection onWalletConnected={(connected) => {
-                console.log('onWalletConnected callback called with:', connected)
+              <WalletSection onWalletConnected={(connected, isTestNet) => {
+                console.log('onWalletConnected callback called with:', connected, 'TestNet:', isTestNet)
                 setIsWalletConnected(connected)
+                setIsTestNetMode(isTestNet || false)
               }} />
             </motion.div>
           )}
@@ -129,7 +131,7 @@ export default function Home() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5 }}
             >
-              <SoulBeaconDashboard />
+              <SoulBeaconDashboard isTestNetMode={isTestNetMode} />
             </motion.div>
           )}
         </AnimatePresence>

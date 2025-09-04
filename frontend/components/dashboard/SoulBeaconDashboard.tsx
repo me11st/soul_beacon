@@ -5,12 +5,15 @@ import { motion } from 'framer-motion'
 import { Sparkles, Heart, Zap, Send, Users, Coins, Plus, MessageCircle } from 'lucide-react'
 import { testNetService } from '../../services/testnet-asa'
 
-export default function SoulBeaconDashboard() {
+interface SoulBeaconDashboardProps {
+  isTestNetMode: boolean
+}
+
+export default function SoulBeaconDashboard({ isTestNetMode }: SoulBeaconDashboardProps) {
   const [beaconText, setBeaconText] = useState('')
   const [category, setCategory] = useState('Emotional Support')
   const [isMinting, setIsMinting] = useState(false)
   const [mintSuccess, setMintSuccess] = useState(false)
-  const [isTestNet, setIsTestNet] = useState(false) // Toggle for TestNet vs Demo
   const [walletAddress, setWalletAddress] = useState<string | null>(null)
   const [mintedBeacons, setMintedBeacons] = useState<Array<{
     id: string
@@ -47,7 +50,7 @@ export default function SoulBeaconDashboard() {
     
     setIsMinting(true)
     
-    if (isTestNet) {
+    if (isTestNetMode) {
       // REAL TestNet ASA minting
       try {
         console.log('🔥 Minting real ASA on TestNet...')
@@ -91,7 +94,6 @@ export default function SoulBeaconDashboard() {
         console.error('❌ TestNet minting failed:', error)
         console.log('Falling back to demo mode...')
         // Fall back to demo mode
-        setIsTestNet(false)
         handleDemoMint()
         return
       }
@@ -148,41 +150,22 @@ export default function SoulBeaconDashboard() {
           Create beacons, discover resonance, and connect with souls
         </p>
         
-        {/* TestNet Toggle */}
-        <div className="mt-6 flex flex-col items-center space-y-2">
-          <div className="flex items-center justify-center space-x-4">
-            <span className="text-white/70">Demo Mode</span>
-            <button
-              onClick={() => setIsTestNet(!isTestNet)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                isTestNet ? 'bg-green-500' : 'bg-white/20'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  isTestNet ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-            <span className="text-white/70">TestNet Mode</span>
-            {isTestNet && (
-              <span className="text-green-400 text-sm">🔥 Real Blockchain!</span>
-            )}
+        {/* Mode Indicator */}
+        {isTestNetMode && (
+          <div className="mt-4 text-center">
+            <span className="inline-block bg-green-500/20 text-green-300 px-4 py-2 rounded text-sm">
+              🔥 TestNet Mode - Real Blockchain Transactions
+            </span>
           </div>
-          
-          {/* Wallet Status */}
-          {walletAddress && (
-            <div className="text-xs text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded">
-              Wallet: {walletAddress.substring(0, 8)}...{walletAddress.slice(-4)}
-            </div>
-          )}
-          
-          {isTestNet && !walletAddress && (
-            <div className="text-xs text-orange-400 bg-orange-500/10 px-3 py-1 rounded">
-              ⚠️ No wallet connected - TestNet mode will fallback to demo
-            </div>
-          )}
-        </div>
+        )}
+        
+        {!isTestNetMode && (
+          <div className="mt-4 text-center">
+            <span className="inline-block bg-orange-500/20 text-orange-300 px-4 py-2 rounded text-sm">
+              🎪 Demo Mode - Simulated Transactions
+            </span>
+          </div>
+        )}
       </motion.div>
 
       <div className="grid lg:grid-cols-3 gap-8">

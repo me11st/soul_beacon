@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { Wallet, ChevronRight, AlertCircle } from 'lucide-react'
 
 interface WalletSectionProps {
-  onWalletConnected: (connected: boolean) => void
+  onWalletConnected: (connected: boolean, isTestNet?: boolean) => void
 }
 
 // Add wallet detection types
@@ -25,6 +25,7 @@ export default function WalletSection({ onWalletConnected }: WalletSectionProps)
   const [connecting, setConnecting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [isTestNet, setIsTestNet] = useState(false) // Toggle for TestNet vs Demo
 
   const handleConnectWallet = async (walletType: string) => {
     setConnecting(walletType)
@@ -91,7 +92,7 @@ export default function WalletSection({ onWalletConnected }: WalletSectionProps)
       if (connected && walletAddress) {
         console.log('Wallet connected successfully, proceeding to dashboard...')
         // Skip the success message display and go directly to dashboard
-        onWalletConnected(true)
+        onWalletConnected(true, isTestNet)
       }
       
     } catch (err) {
@@ -116,6 +117,27 @@ export default function WalletSection({ onWalletConnected }: WalletSectionProps)
         <p className="text-xl text-white/70 max-w-2xl mx-auto">
           Connect your Algorand wallet to mint Soul Beacon tokens and participate in the resonance matching.
         </p>
+        
+        {/* TestNet Toggle */}
+        <div className="mt-6 flex items-center justify-center space-x-4">
+          <span className="text-white/70">Demo Mode</span>
+          <button
+            onClick={() => setIsTestNet(!isTestNet)}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              isTestNet ? 'bg-green-500' : 'bg-white/20'
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                isTestNet ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
+          <span className="text-white/70">TestNet Mode</span>
+          {isTestNet && (
+            <span className="text-green-400 text-sm">🔥 Real Blockchain!</span>
+          )}
+        </div>
       </motion.div>
 
       <motion.div 
@@ -124,7 +146,7 @@ export default function WalletSection({ onWalletConnected }: WalletSectionProps)
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="max-w-2xl mx-auto space-y-4">
           {/* Exodus Wallet - PRIMARY CHOICE */}
           <motion.button
             onClick={() => handleConnectWallet('Exodus')}
@@ -234,28 +256,6 @@ export default function WalletSection({ onWalletConnected }: WalletSectionProps)
             <span className="text-green-300">{success}</span>
           </motion.div>
         )}
-      </motion.div>
-
-      {/* Exodus Setup Help */}
-      <motion.div 
-        className="mt-8 max-w-2xl mx-auto p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, delay: 0.6 }}
-      >
-        <h4 className="text-sm font-semibold mb-2 text-blue-300 flex items-center">
-          <span className="text-lg mr-2">💡</span>
-          Exodus Wallet Setup for Algorand
-        </h4>
-        <div className="text-xs text-blue-200/80 space-y-1">
-          <p>1. Open your Exodus desktop app or browser extension</p>
-          <p>2. Go to Settings → Assets → Search for "Algorand"</p>
-          <p>3. Enable Algorand (ALGO) if it's not already enabled</p>
-          <p>4. Refresh this page and try connecting again</p>
-          <p className="text-cyan-300 mt-2">
-            🚀 <strong>For demo:</strong> The app will work in demo mode even if setup fails!
-          </p>
-        </div>
       </motion.div>
 
       <motion.div 
