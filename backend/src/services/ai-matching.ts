@@ -55,7 +55,8 @@ class AIMatchingService {
     userAddress: string,
     beacon: BeaconData,
     userProfile: UserSoulProfile,
-    availableProfiles: UserSoulProfile[]
+    availableProfiles: UserSoulProfile[],
+    userApiKey?: string
   ): Promise<MatchResult[]> {
     
     // CRITICAL: Prevent self-matching
@@ -77,7 +78,8 @@ class AIMatchingService {
         const resonanceAnalysis = await this.analyzeResonance(
           userProfile,
           candidateProfile,
-          beacon
+          beacon,
+          userApiKey
         )
         
         if (resonanceAnalysis.resonanceScore >= 70) { // Minimum threshold
@@ -107,10 +109,15 @@ class AIMatchingService {
   private async analyzeResonance(
     userProfile: UserSoulProfile,
     candidateProfile: UserSoulProfile,
-    beacon: BeaconData
+    beacon: BeaconData,
+    userApiKey?: string
   ): Promise<{ resonanceScore: number; reasons: string[] }> {
     
-    if (this.openai) {
+    // Use provided API key if available, otherwise fall back to environment or mock
+    if (userApiKey) {
+      const tempOpenAI = new OpenAI({ apiKey: userApiKey })
+      return this.aiResonanceAnalysisWithInstance(userProfile, candidateProfile, beacon, tempOpenAI)
+    } else if (this.openai) {
       return this.aiResonanceAnalysis(userProfile, candidateProfile, beacon)
     } else {
       return this.mockResonanceAnalysis(userProfile, candidateProfile, beacon)
@@ -167,6 +174,63 @@ Respond in JSON format:
       }
     } catch (error) {
       console.error('❌ OpenAI analysis failed:', error)
+      // Fallback to mock analysis
+      return this.mockResonanceAnalysis(userProfile, candidateProfile, beacon)
+    }
+  }
+
+  /**
+   * Real AI analysis using provided OpenAI instance
+   */
+  private async aiResonanceAnalysisWithInstance(
+    userProfile: UserSoulProfile,
+    candidateProfile: UserSoulProfile,
+    beacon: BeaconData,
+    openaiInstance: OpenAI
+  ): Promise<{ resonanceScore: number; reasons: string[] }> {
+    
+    const prompt = `
+Analyze the soul resonance between two users for a meaningful connection:
+
+USER 1 (Beacon Creator):
+- Interests: ${userProfile.interests.join(', ')}
+- Values: ${userProfile.values.join(', ')}
+- Communication: ${userProfile.communicationStyle}
+- Energy: ${userProfile.energyLevel}
+- Recent Beacon: "${beacon.content}" (${beacon.category})
+
+USER 2 (Potential Match):
+- Interests: ${candidateProfile.interests.join(', ')}
+- Values: ${candidateProfile.values.join(', ')}
+- Communication: ${candidateProfile.communicationStyle}
+- Energy: ${candidateProfile.energyLevel}
+
+Calculate resonance compatibility (0-100) and provide 2-3 specific reasons.
+Focus on: shared values, complementary strengths, communication compatibility, and mutual growth potential.
+
+Respond in JSON format:
+{
+  "resonanceScore": <number>,
+  "reasons": ["reason 1", "reason 2", "reason 3"]
+}
+`
+
+    try {
+      console.log('🤖 Using user\'s OpenAI API key for real AI analysis')
+      const response = await openaiInstance.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+        max_tokens: 300
+      })
+
+      const result = JSON.parse(response.choices[0].message.content || '{}')
+      return {
+        resonanceScore: result.resonanceScore || 0,
+        reasons: result.reasons || []
+      }
+    } catch (error) {
+      console.error('❌ User OpenAI API key analysis failed:', error)
       // Fallback to mock analysis
       return this.mockResonanceAnalysis(userProfile, candidateProfile, beacon)
     }

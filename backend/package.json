@@ -27,14 +27,14 @@
     "algosdk": "^3.0.0",
     "@algorandfoundation/algokit-utils": "^6.0.0",
     "winston": "^3.11.0",
-    "redis": "^4.6.10"
-  },
-  "devDependencies": {
+    "redis": "^4.6.10",
     "@types/express": "^4.17.21",
     "@types/cors": "^2.8.17",
     "@types/node": "^20.9.0",
     "@types/jsonwebtoken": "^9.0.5",
-    "@types/bcryptjs": "^2.4.6",
+    "@types/bcryptjs": "^2.4.6"
+  },
+  "devDependencies": {
     "@types/jest": "^29.5.8",
     "typescript": "^5.2.2",
     "nodemon": "^3.0.2",

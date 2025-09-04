@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { aiMatchingService, UserSoulProfile, BeaconData } from '../services/ai-matching'
+import { getUserApiKey } from './ai'
 
 const router = Router()
 
@@ -16,6 +17,7 @@ router.post('/find', async (req, res) => {
       beaconContent, 
       beaconCategory, 
       userAddress,
+      userId,
       userPreferences 
     } = req.body
     
@@ -53,12 +55,21 @@ router.post('/find', async (req, res) => {
     const allProfiles = Array.from(userProfiles.values())
     console.log(`🧠 Analyzing ${allProfiles.length} total profiles for matches`)
     
+    // Get user's OpenAI API key for real AI analysis
+    const userApiKey = userId ? getUserApiKey(userId) : undefined
+    if (userApiKey) {
+      console.log('🔑 Using user\'s OpenAI API key for real AI analysis')
+    } else {
+      console.log('🎭 No API key found, using mock AI analysis')
+    }
+    
     // Use AI to find matches (excludes self automatically)
     const matches = await aiMatchingService.findMatches(
       userAddress,
       beacon,
       userProfile,
-      allProfiles
+      allProfiles,
+      userApiKey
     )
     
     console.log(`💫 Found ${matches.length} compatible matches with resonance >= 70%`)

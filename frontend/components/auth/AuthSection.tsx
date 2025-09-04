@@ -29,20 +29,52 @@ export default function AuthSection({ onAuthSuccess }: AuthSectionProps) {
     setError('')
 
     try {
-      // TEMP: For demo/testing - fall back to simulation
-      console.log('Using demo mode authentication')
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      // First, try to verify the API key with the backend
+      const userId = `user-${Date.now()}`
       
-      const userData = {
-        id: `user-${Date.now()}`,
-        apiKey: apiKey.substring(0, 20) + '...' + apiKey.slice(-4),
-        authMethod: 'openai',
-        authenticatedAt: new Date().toISOString()
-      }
+      const response = await fetch('http://localhost:8000/api/ai/set-key', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          apiKey,
+          userId
+        })
+      })
 
-      onAuthSuccess(userData)
+      if (response.ok) {
+        console.log('✅ OpenAI API key verified and connected to backend')
+        
+        const userData = {
+          id: userId,
+          apiKey: apiKey.substring(0, 20) + '...' + apiKey.slice(-4),
+          authMethod: 'openai',
+          authenticatedAt: new Date().toISOString()
+        }
+
+        onAuthSuccess(userData)
+      } else {
+        const error = await response.json()
+        setError(error.error || 'Failed to verify API key with OpenAI')
+      }
     } catch (err) {
-      setError('Failed to authenticate. Please check your API key.')
+      console.warn('Backend not available, using demo mode')
+      // Fallback to demo mode if backend is not available
+      try {
+        await new Promise(resolve => setTimeout(resolve, 1500))
+        
+        const userData = {
+          id: `user-${Date.now()}`,
+          apiKey: apiKey.substring(0, 20) + '...' + apiKey.slice(-4),
+          authMethod: 'openai',
+          authenticatedAt: new Date().toISOString()
+        }
+
+        onAuthSuccess(userData)
+      } catch (fallbackErr) {
+        setError('Failed to authenticate. Please check your API key.')
+      }
     } finally {
       setIsLoading(false)
     }

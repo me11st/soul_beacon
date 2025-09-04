@@ -8,6 +8,7 @@ import ChatRoom from '../chat/ChatRoom'
 
 interface SoulBeaconDashboardProps {
   isTestNetMode: boolean
+  user?: any
 }
 
 interface MatchData {
@@ -22,7 +23,7 @@ interface MatchData {
   status: 'active' | 'chatting'
 }
 
-export default function SoulBeaconDashboard({ isTestNetMode }: SoulBeaconDashboardProps) {
+export default function SoulBeaconDashboard({ isTestNetMode, user }: SoulBeaconDashboardProps) {
   const [beaconText, setBeaconText] = useState('')
   const [category, setCategory] = useState('Emotional Support')
   const [isMinting, setIsMinting] = useState(false)
@@ -261,7 +262,8 @@ export default function SoulBeaconDashboard({ isTestNetMode }: SoulBeaconDashboa
               beaconId: newBeacon.id,
               beaconContent: newBeacon.text,
               beaconCategory: newBeacon.category,
-              userAddress: effectiveUserAddress
+              userAddress: effectiveUserAddress,
+              userId: user?.id
             })
           })
           

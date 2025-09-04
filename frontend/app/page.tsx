@@ -131,7 +131,7 @@ export default function Home() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5 }}
             >
-              <SoulBeaconDashboard isTestNetMode={isTestNetMode} />
+              <SoulBeaconDashboard isTestNetMode={isTestNetMode} user={user} />
             </motion.div>
           )}
         </AnimatePresence>

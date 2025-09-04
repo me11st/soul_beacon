@@ -1,11 +1,28 @@
 # Render.com deployment configuration
+services:
+  - type: web
+    name: soul-beacon-backend
+    env: node
+    buildCommand: npm install && npm run build:backend
+    startCommand: npm run start:backend
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_URL
+        value: https://soul-beacon-frontend.onrender.com
+      - key: OPENAI_API_KEY
+        value: ""
+    healthCheckPath: /api/health
 
-# Build Command: npm install && npm run build
-# Start Command: npm start
-
-# Environment Variables needed:
-# NODE_ENV=production
-# PORT=8000
-# FRONTEND_URL=https://soulbeacon.zkverse.me
-
-# Auto-deploy from GitHub: main branch
+  - type: web
+    name: soul-beacon-frontend
+    env: node
+    buildCommand: npm install && npm run build:frontend
+    startCommand: npm run start:frontend
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: https://soul-beacon-backend.onrender.com
